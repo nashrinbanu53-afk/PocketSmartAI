@@ -1,0 +1,1 @@
+# PocketSmartAI application package
