@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Home Planner — PocketSmart AI{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <span class="eyebrow">HOME INTERIOR</span>
+    <h1>Build a room within budget.</h1>
+    <p>Tell the AI what you need and how you want the space to feel.</p>
+</div>
+
+<div class="planner-layout">
+
+    <form id="homeForm" class="card form-card">
+
+        <label>
+            Total budget (₹)
+            <input name="budget" type="number" min="1" required value="25000">
+        </label>
+
+        <label>
+            Room type
+            <select name="room_type">
+                <option>Living Room</option>
+                <option>Bedroom</option>
+                <option>Kitchen</option>
+                <option>Dining Room</option>
+            </select>
+        </label>
+
+        <label>
+            Style
+            <select name="style">
+                <option>Modern</option>
+                <option>Minimal</option>
+                <option>Traditional</option>
+                <option>Boho</option>
+            </select>
+        </label>
+
+        <label>
+            Items
+            <small>one per line: item, quantity</small>
+
+            <textarea
+                name="items"
+                placeholder="Ceiling fan, 1&#10;Wall light, 2&#10;Side table, 1"
+            ></textarea>
+        </label>
+
+        <button class="btn primary" type="submit">
+            Generate Home Plan
+        </button>
+
+    </form>
+
+    <div id="result" class="card result">
+        Your recommendation will appear here.
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+document.getElementById("homeForm").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const form = new FormData(e.target);
+
+    const items = (form.get("items") || "")
+        .split("\n")
+        .map(function(line) {
+            return line.trim();
+        })
+        .filter(function(line) {
+            return line.length > 0;
+        })
+        .map(function(line) {
+
+            const parts = line.split(",");
+
+            return {
+                name: parts[0].trim(),
+                quantity: Number(parts[1] || 1)
+            };
+
+        })
+        .filter(function(item) {
+            return item.quantity > 0;
+        });
+
+
+    const payload = {
+        budget: Number(form.get("budget")),
+        room_type: form.get("room_type"),
+        style: form.get("style"),
+        items: items
+    };
+
+
+    await generatePlanner(
+        "/generate-home",
+        payload,
+        "result"
+    );
+
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Party Planner — PocketSmart AI{% endblock %}
+{% block content %}
+<div class="page-head"><span class="eyebrow">PARTY PLANNER</span><h1>Organize the event without budget guesswork.</h1><p>Set your guest count and event details.</p></div>
+<div class="planner-layout">
+<form id="partyForm" class="card form-card">
+<label>Total budget (₹)<input name="budget" type="number" min="1" required value="30000"></label>
+<label>Guests<input name="guests" type="number" min="1" required value="30"></label>
+<label>Event type<select name="event_type"><option>Birthday</option><option>Wedding</option><option>Corporate</option><option>Family Function</option></select></label>
+<label>Venue preference<input name="venue" value="Home"></label>
+<label>Preferences<textarea name="preferences" placeholder="Vegetarian food, simple decoration, evening event..."></textarea></label>
+<button class="btn primary" type="submit">Generate Party Plan</button>
+</form>
+<div id="result" class="card result">Your recommendation will appear here.</div>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+document.getElementById("partyForm").addEventListener("submit", async e=>{
+ e.preventDefault();
+ const f=new FormData(e.target);
+ const payload={
+   budget:Number(f.get("budget")),
+   guests:Number(f.get("guests")),
+   event_type:f.get("event_type"),
+   venue:f.get("venue"),
+   preferences:f.get("preferences")
+ };
+ await generatePlanner("/generate-party",payload,"result");
+});
+</script>{% endblock %}

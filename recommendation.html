@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Recommendation — PocketSmart AI{% endblock %}
+{% block content %}<div class="page-head"><span class="eyebrow">RECOMMENDATION</span><h1>Saved AI recommendation</h1></div><section id="result" class="card result">Loading...</section>{% endblock %}{% block scripts %}<script>async function load(){const r=await fetch('/recommendations-details/{{ recommendation_id }}');const d=await r.json();const data=d.response||d;if(!r.ok){document.getElementById('result').innerHTML='<div class="error">'+(d.detail||'Recommendation not found')+'</div>';return;}renderRecommendation(data,document.getElementById('result'));}load();</script>{% endblock %}

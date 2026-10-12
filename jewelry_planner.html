@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Jewelry Planner — PocketSmart AI{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <span class="eyebrow">JEWELRY PLANNER</span>
+    <h1>Match your jewelry to the occasion.</h1>
+    <p>
+        Optionally upload an outfit image so Gemini can use it as a visual reference.
+    </p>
+</div>
+
+<div class="planner-layout">
+
+    <form id="jewelryForm" class="card form-card">
+
+        <label>
+            Budget (₹)
+            <input
+                name="budget"
+                type="number"
+                min="1"
+                required
+                value="10000"
+            >
+        </label>
+
+        <label>
+            Occasion
+            <select name="occasion">
+                <option>Wedding</option>
+                <option>College Event</option>
+                <option>Party</option>
+                <option>Traditional Function</option>
+            </select>
+        </label>
+
+        <label>
+            Style
+            <select name="style">
+                <option>Elegant</option>
+                <option>Minimal</option>
+                <option>Traditional</option>
+                <option>Statement</option>
+            </select>
+        </label>
+
+        <label>
+            Outfit colour
+            <input
+                name="outfit_color"
+                placeholder="e.g. navy blue and white"
+            >
+        </label>
+
+        <label>
+            Outfit image
+            <small>optional, max 5 MB</small>
+
+            <input
+                id="jewelryImage"
+                name="image"
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            >
+        </label>
+
+        <label>
+            Notes
+            <textarea
+                name="notes"
+                placeholder="Any preferences..."
+            ></textarea>
+        </label>
+
+        <button
+            class="btn primary"
+            type="submit"
+        >
+            Generate Jewelry Plan
+        </button>
+
+    </form>
+
+    <div id="result" class="card result">
+        Your recommendation will appear here.
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+
+document.getElementById("jewelryForm").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const form = e.target;
+    const box = document.getElementById("result");
+
+    box.innerHTML =
+        "<div class='loader'>Analyzing your request…</div>";
+
+    try {
+
+        const body = new FormData();
+
+        body.append(
+            "budget",
+            form.elements["budget"].value
+        );
+
+        body.append(
+            "occasion",
+            form.elements["occasion"].value
+        );
+
+        body.append(
+            "style",
+            form.elements["style"].value
+        );
+
+        body.append(
+            "outfit_color",
+            form.elements["outfit_color"].value
+        );
+
+        body.append(
+            "notes",
+            form.elements["notes"].value
+        );
+
+        const imageInput = document.getElementById("jewelryImage");
+
+        /*
+         * Only send the image when the user actually selected one.
+         * This prevents an empty file from being sent to the backend.
+         */
+        if (
+            imageInput.files &&
+            imageInput.files.length > 0
+        ) {
+
+            body.append(
+                "image",
+                imageInput.files[0]
+            );
+
+        }
+
+        const response = await fetch(
+            "/generate-jewelry",
+            {
+                method: "POST",
+                body: body
+            }
+        );
+
+        const contentType =
+            response.headers.get("content-type") || "";
+
+        let data;
+
+        if (contentType.includes("application/json")) {
+
+            data = await response.json();
+
+        } else {
+
+            const text = await response.text();
+
+            throw new Error(
+                text || "Server returned an unexpected response."
+            );
+
+        }
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail || "Request failed."
+            );
+
+        }
+
+        renderRecommendation(
+            data,
+            box
+        );
+
+    } catch (error) {
+
+        box.innerHTML =
+            `<div class="error">${error.message}</div>`;
+
+    }
+
+});
+
+</script>
+
+{% endblock %}
