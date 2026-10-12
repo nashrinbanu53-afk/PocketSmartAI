@@ -1,1 +1,0 @@
-# PocketSmartAI routers package
